@@ -41,5 +41,12 @@ npm run build    # production build → dist/
 npm run check    # svelte-check + tsc
 ```
 
+### Docker
+
+```sh
+docker build -t wealthviz .
+docker run --rm -p 8080:80 wealthviz   # → http://localhost:8080
+```
+
 Stack: Vite · Svelte 5 · TypeScript · three.js (plain, no wrapper — the scene is driven
 imperatively from `src/lib/scene/`, Svelte owns the UI overlay).
