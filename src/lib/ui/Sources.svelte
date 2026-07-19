@@ -23,6 +23,11 @@
       <button class="ghost" onclick={onclose} aria-label="Close">✕</button>
     </header>
     <p class="disclaimer">{dataset.disclaimer}</p>
+    <p class="disclaimer">
+      Items marked * (groceries, wedding, child, salary, car, home, turbine, school, ICE, Airbus,
+      Eurofighter, and the magnitude-ladder anchors) are rounded, order-of-magnitude examples —
+      not statistics.
+    </p>
     <ul>
       {#each dataset.sources as s (s.id)}
         <li><a href={s.url} target="_blank" rel="noreferrer">{s.label}</a></li>

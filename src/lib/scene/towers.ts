@@ -26,6 +26,7 @@ import {
   HUMAN_HEIGHT,
   LINEUP_X,
   MAGNITUDE_LADDER,
+  PALLET,
 } from './constants';
 import { EDGE_TEXTURE_METERS, makeBeamTexture, makeEdgeTexture, makeBillTopTexture } from './textures';
 import { makeTag } from './labels';
@@ -249,10 +250,15 @@ export function buildLineup(cfg: UserConfig): LineupHandles {
 
   const items: ItemSpec[] = [
     { id: 'coffee', title: 'Coffee', sub: 'two €2 coins', amount: COFFEE_PRICE, x: LINEUP_X.coffee, coins: true },
+    { id: 'groceries', title: 'Groceries, a month*', amount: 400, x: LINEUP_X.groceries },
     { id: 'rent', title: 'Rent, one month*', amount: EXAMPLE_RENT, x: LINEUP_X.rent },
     { id: 'income', title: 'Monthly income', amount: monthly, x: LINEUP_X.income },
+    { id: 'rentYear', title: 'A year of rent*', amount: EXAMPLE_RENT * 12, x: LINEUP_X.rentYear },
+    { id: 'wedding', title: 'A wedding*', amount: 15_000, x: LINEUP_X.wedding },
     { id: 'spending', title: 'Annual spending', amount: annual, x: LINEUP_X.spending },
     { id: 'car', title: 'A new car*', amount: CAR_PRICE, x: LINEUP_X.car },
+    { id: 'salary', title: 'Median gross salary, a year*', amount: 45_000, x: LINEUP_X.salary },
+    { id: 'child', title: 'Raising a child to 18*', amount: 150_000, x: LINEUP_X.child },
     {
       id: 'you',
       title: 'Your wealth',
@@ -278,6 +284,11 @@ export function buildLineup(cfg: UserConfig): LineupHandles {
       amount: lifetimeEarnings(cfg),
       x: LINEUP_X.lifetime,
     },
+    { id: 'turbine', title: 'A wind turbine*', amount: 5_000_000, x: LINEUP_X.turbine },
+    { id: 'school', title: 'A new school*', amount: 25_000_000, x: LINEUP_X.school },
+    { id: 'ice', title: 'An ICE train*', amount: 33_000_000, x: LINEUP_X.ice },
+    { id: 'airbus', title: 'An Airbus A320*', amount: 100_000_000, x: LINEUP_X.airbus },
+    { id: 'fighter', title: 'A Eurofighter*', amount: 140_000_000, x: LINEUP_X.fighter },
     { id: 'billion', title: '€1 billion', sub: '1 km of notes', amount: 1_000_000_000, x: LINEUP_X.billion },
   ];
 
@@ -426,10 +437,115 @@ export function buildLineup(cfg: UserConfig): LineupHandles {
   human.position.set(LINEUP_X.human + 0.3, 0, -0.6);
   group.add(human);
 
+  buildPallets(cfg, group, pickables);
   buildField(cfg, group, positions, pickables);
   buildStaircase(cfg, group, positions, pickables);
 
   return { group, positions, heights, pickables };
+}
+
+/**
+ * The second encoding for the very large amounts: money as freight.
+ * €1B = 12½ euro-pallets of notes behind its tower; €200B = a 2,500-pallet
+ * warehouse grid vanishing into the fog at the projection beam.
+ */
+function buildPallets(cfg: UserConfig, group: THREE.Group, pickables: Pickable[]): void {
+  const { edge } = tex();
+  const edgeTex = edge.clone();
+  edgeTex.needsUpdate = true;
+  edgeTex.repeat.set(6, PALLET.h / EDGE_TEXTURE_METERS);
+  // Tinted down so the freight field reads as mass, not as a light source.
+  const mat = new THREE.MeshStandardMaterial({ map: edgeTex, color: 0x76857c, roughness: 0.9 });
+  const geo = new THREE.BoxGeometry(PALLET.w, PALLET.h, PALLET.d);
+  geo.translate(0, PALLET.h / 2, 0);
+
+  const palletInfo = (context: string): HoverHit['info'] => ({
+    title: 'One pallet of €100 notes',
+    meta: `${formatEUR(PALLET.value)} · 1,2 × 0,8 × 1,0 m`,
+    rows: [
+      { label: 'vs. your wealth', value: ratio(PALLET.value, cfg.totalWealth) },
+      { label: 'of your lifetime earnings', value: ratio(PALLET.value, lifetimeEarnings(cfg)) },
+      { label: 'part of', value: context },
+    ],
+  });
+
+  // €1B as freight: 12 full pallets + one half, behind the tower.
+  {
+    const full = Math.floor(1_000_000_000 / PALLET.value); // 12
+    const inst = new THREE.InstancedMesh(geo, mat, full);
+    const m = new THREE.Matrix4();
+    for (let i = 0; i < full; i++) {
+      const col = i % 4;
+      const row = Math.floor(i / 4);
+      m.makeTranslation(LINEUP_X.billion - 2.4 + col * 1.6, 0, -2.6 - row * 1.3);
+      inst.setMatrixAt(i, m);
+    }
+    inst.instanceMatrix.needsUpdate = true;
+    group.add(inst);
+    const half = new THREE.Mesh(geo.clone().scale(1, 0.5, 1), mat);
+    half.position.set(LINEUP_X.billion - 2.4, 0, -2.6 - 3 * 1.3);
+    group.add(half);
+    const tag = makeTag(['the same €1B as freight', `12½ pallets à ${formatEUR(PALLET.value)}`], {
+      variant: 'axis',
+    });
+    tag.position.set(LINEUP_X.billion - 3.4, 1.3, -2.6);
+    group.add(tag);
+    pickables.push({
+      object: inst,
+      resolve: (hit) => {
+        const id = hit.instanceId;
+        if (id == null) return null;
+        const col = id % 4;
+        const row = Math.floor(id / 4);
+        return {
+          info: palletInfo('€1 billion — 12½ pallets'),
+          center: new THREE.Vector3(
+            LINEUP_X.billion - 2.4 + col * 1.6,
+            PALLET.h / 2,
+            -2.6 - row * 1.3
+          ),
+          size: new THREE.Vector3(PALLET.w, PALLET.h, PALLET.d),
+        };
+      },
+    });
+  }
+
+  // €200B as freight: 2,500 pallets, 50 × 50, fading into the fog.
+  {
+    const count = Math.round(200_000_000_000 / PALLET.value); // 2500
+    const cols = 50;
+    const spacing = 1.6;
+    const inst = new THREE.InstancedMesh(geo, mat, count);
+    const m = new THREE.Matrix4();
+    const x0 = LINEUP_X.projection - (cols / 2) * spacing + spacing / 2;
+    for (let i = 0; i < count; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      m.makeTranslation(x0 + col * spacing, 0, -3 - row * spacing);
+      inst.setMatrixAt(i, m);
+    }
+    inst.instanceMatrix.needsUpdate = true;
+    group.add(inst);
+    const tag = makeTag(['€200B as freight', `2.500 pallets · a 80 × 80 m warehouse floor`], {
+      variant: 'axis',
+    });
+    tag.position.set(LINEUP_X.projection - 12, 2.2, -4);
+    group.add(tag);
+    pickables.push({
+      object: inst,
+      resolve: (hit) => {
+        const id = hit.instanceId;
+        if (id == null) return null;
+        const col = id % cols;
+        const row = Math.floor(id / cols);
+        return {
+          info: palletInfo('€200 billion — 2.500 pallets'),
+          center: new THREE.Vector3(x0 + col * spacing, PALLET.h / 2, -3 - row * spacing),
+          size: new THREE.Vector3(PALLET.w, PALLET.h, PALLET.d),
+        };
+      },
+    });
+  }
 }
 
 /**

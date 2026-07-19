@@ -237,8 +237,8 @@ export function buildTourStops(cfg: UserConfig, lineup: LineupHandles): TourStop
   // 1 — the whole line at once: the comparison IS the app.
   stops.push({
     id: 'overview',
-    pos: new THREE.Vector3(3.8, 1.4, 8.5),
-    look: new THREE.Vector3(4.1, 0.7, 0),
+    pos: new THREE.Vector3(5.0, 1.5, 10),
+    look: new THREE.Vector3(5.4, 0.75, 0),
     title: 'Everything on one line.',
     sub: 'Coffee to a billion euros — every amount is a stack of €100 notes on the same baseline, at true physical scale: €1M = 1 m. Drag to look around at any stop; Space to continue.',
     duration: 4,
@@ -496,13 +496,28 @@ export function buildTourStops(cfg: UserConfig, lineup: LineupHandles): TourStop
     );
   }
 
+  // Machines and institutions — the €5M–€140M ridge.
+  stops.push({
+    id: 'monuments',
+    pos: new THREE.Vector3(9.8, 8, 24),
+    look: new THREE.Vector3(12, 18, 0),
+    title: 'Machines and institutions.',
+    sub: 'A wind turbine, a school, an ICE train, an Airbus, a Eurofighter — the €5M–€140M range where public money lives. Every one taller than a building; every one still dwarfed by what comes next.',
+    chips: [
+      { label: 'an ICE train', value: `${fmtCount(33_000_000 / Math.max(life, 1))}× your lifetime` },
+      { label: 'a Eurofighter vs. €1B', value: ratio(140_000_000, 1_000_000_000) },
+      { label: 'your wealth vs. a turbine', value: ratio(wealth, 5_000_000) },
+    ],
+    duration: 4.5,
+  });
+
   // Pull back — the line again, now that every stack means something.
   stops.push({
     id: 'compare',
-    pos: new THREE.Vector3(4.4, 1.8, 10.5),
-    look: new THREE.Vector3(4.8, 1.0, 0),
+    pos: new THREE.Vector3(6.6, 2.4, 13.5),
+    look: new THREE.Vector3(7.2, 1.2, 0),
     title: 'The same line, one more time.',
-    sub: 'Coffee, your year, your wealth, your peers, €1M — and the thing on the right that does not stop.',
+    sub: 'Coffee to Eurofighter in fifteen metres — and the thing on the right that does not stop.',
     duration: 4,
   });
 
@@ -513,7 +528,7 @@ export function buildTourStops(cfg: UserConfig, lineup: LineupHandles): TourStop
       pos: p.clone().add(new THREE.Vector3(-4, 1.8, 14)),
       look: p.clone().add(new THREE.Vector3(0, 10, 0)),
       title: '€1,000,000,000.',
-      sub: 'Same 15 cm footprint as your stack — one thousand metres tall. The top is above the clouds. Look up, then we fly.',
+      sub: 'Same 15 cm footprint as your stack — one thousand metres tall. Behind it, the same billion as freight: 12½ pallets. Look up, then we fly.',
       chips: [
         { label: 'of your lifetimes', value: `${fmtCount(1_000_000_000 / Math.max(life, 1))}×` },
         { label: 'homes', value: fmtCount(1_000_000_000 / HOUSE_PRICE) },
@@ -565,7 +580,7 @@ export function buildTourStops(cfg: UserConfig, lineup: LineupHandles): TourStop
       pos: p.clone().add(new THREE.Vector3(-6, h + 25, 30)),
       look: proj.clone().add(new THREE.Vector3(0, 1200, 0)),
       title: 'The largest private fortunes: roughly €200,000,000,000.',
-      sub: 'That beam stands where the stack would: 200 km tall — 200 of the towers you just climbed. It cannot be drawn here; it does not fit in this world.',
+      sub: 'That beam stands where the stack would: 200 km tall — 200 of the towers you just climbed. On the ground beneath it: the same fortune as freight, 2.500 pallets vanishing into the dark.',
       chips: [
         { label: 'vs. the tower you climbed', value: '200×' },
         { label: 'of your lifetimes', value: `${fmtCount(200_000_000_000 / Math.max(life, 1))}×` },
@@ -577,8 +592,8 @@ export function buildTourStops(cfg: UserConfig, lineup: LineupHandles): TourStop
 
   stops.push({
     id: 'release',
-    pos: new THREE.Vector3(9, 40, 30),
-    look: new THREE.Vector3(4.0, 1, 0),
+    pos: new THREE.Vector3(11, 40, 32),
+    look: new THREE.Vector3(5.0, 1, 0),
     title: 'Now it is yours.',
     sub: 'Free flight is on: WASD to move, E/Q up & down, Shift to boost, mouse wheel for speed — click the scene to capture the mouse.',
     duration: 5,

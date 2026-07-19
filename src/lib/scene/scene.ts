@@ -67,8 +67,8 @@ export function createScene(canvas: HTMLCanvasElement, cfg: UserConfig, events: 
 
   // Open on the comparison: the whole line in one frame.
   const camera = new THREE.PerspectiveCamera(55, 1, 0.02, 30000);
-  camera.position.set(3.8, 1.4, 8.5);
-  camera.lookAt(4.1, 0.7, 0);
+  camera.position.set(5.0, 1.5, 10);
+  camera.lookAt(5.4, 0.75, 0);
 
   // Night-sky dome + stars.
   const sky = new THREE.Mesh(
@@ -268,7 +268,7 @@ export function createScene(canvas: HTMLCanvasElement, cfg: UserConfig, events: 
   composer.addPass(new OutputPass());
 
   const controls = new SceneControls(camera, canvas, (m) => events.onMode(m));
-  controls.orbit.target.set(4.1, 0.7, 0);
+  controls.orbit.target.set(5.4, 0.75, 0);
 
   const tour = new Tour(camera, {
     onCaption: (c) => events.onCaption(c),

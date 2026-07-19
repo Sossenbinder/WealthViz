@@ -61,18 +61,34 @@ export const COLORS = {
  */
 export const LINEUP_X = {
   coffee: 0,
-  rent: 0.55,
-  income: 1.1,
-  spending: 1.7,
-  car: 2.45,
-  you: 3.25,
-  human: 2.7,
-  house: 4.05,
-  fire: 4.85,
-  million: 5.65,
-  lifetime: 6.5,
-  billion: 14,
-  projection: 46,
+  groceries: 0.5,
+  rent: 1.0,
+  income: 1.5,
+  rentYear: 2.0,
+  wedding: 2.5,
+  spending: 3.0,
+  car: 3.55,
+  salary: 4.1,
+  child: 4.65,
+  human: 4.75,
+  you: 5.3,
+  house: 6.1,
+  fire: 6.9,
+  million: 7.7,
+  lifetime: 8.5,
+  turbine: 9.6,
+  school: 10.7,
+  ice: 11.8,
+  airbus: 13.2,
+  fighter: 14.6,
+  billion: 18,
+  projection: 50,
 };
 
-export const LINEUP_CENTER = new THREE.Vector3(3.5, 0, 0);
+export const LINEUP_CENTER = new THREE.Vector3(5.0, 0, 0);
+
+/**
+ * A euro-pallet block of €100 notes: 1.2 × 0.8 m footprint, 1 m high.
+ * (1.2·0.8)/(0.147·0.082) ≈ 80 metre-stacks → ≈ €80M per pallet.
+ */
+export const PALLET = { w: 1.2, d: 0.8, h: 1.0, value: 80_000_000 };
