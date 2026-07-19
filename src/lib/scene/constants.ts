@@ -22,6 +22,20 @@ export const FLYUP_MILESTONES = [
   { label: 'Burj Khalifa', height: 828 },
 ];
 
+/**
+ * Magnitude ladder: reference lines that turn the empty sky into a labeled
+ * axis. Heights are € millions at the 1 m = €1M scale; anchors marked * are
+ * order-of-magnitude examples, not statistics.
+ */
+export const MAGNITUDE_LADDER = [
+  { height: 5, note: 'a year of a DAX CEO*' },
+  { height: 20, note: 'a private jet*' },
+  { height: 50, note: 'a star football transfer*' },
+  { height: 135, note: 'most expensive car ever auctioned' },
+  { height: 200, note: 'a Hollywood blockbuster*' },
+  { height: 500, note: 'the largest superyachts*' },
+];
+
 export const COLORS = {
   sky: 0x04060a,
   horizon: 0x16202c,

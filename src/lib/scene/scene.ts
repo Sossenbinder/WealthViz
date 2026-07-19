@@ -9,7 +9,7 @@ import { COLORS, LINEUP_X } from './constants';
 import { SceneControls, type Mode } from './controls';
 import { buildLineup, type LineupHandles } from './towers';
 import { buildTourStops, Tour, type CaptionState } from './tour';
-import { disposeObject, makeCloudTexture } from './textures';
+import { disposeObject, makeBillTopTexture, makeCloudTexture } from './textures';
 import type { HoverInfo, Pickable } from './hover';
 
 export type { Mode } from './controls';
@@ -169,11 +169,27 @@ export function createScene(canvas: HTMLCanvasElement, cfg: UserConfig, events: 
   }
   scene.add(clouds);
 
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // One €100 note, forever fluttering down beside the start of the line —
+  // the unit of the whole scene, falling through it.
+  const fallingNote = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.147, 0.082),
+    new THREE.MeshStandardMaterial({
+      map: makeBillTopTexture(),
+      side: THREE.DoubleSide,
+      roughness: 0.75,
+    })
+  );
+  fallingNote.visible = !reducedMotion;
+  scene.add(fallingNote);
+
   // Config-driven content.
   let lineup: LineupHandles = buildLineup(cfg);
   scene.add(lineup.group);
   let currentCfg = cfg;
   let pickMap = new Map<THREE.Object3D, Pickable>(lineup.pickables.map((p) => [p.object, p]));
+  let beamRef = lineup.group.getObjectByName('beam200b') as THREE.Mesh | undefined;
 
   // Hover inspect: raycast on pointer move, gold edge box on the hit.
   const raycaster = new THREE.Raycaster();
@@ -282,6 +298,7 @@ export function createScene(canvas: HTMLCanvasElement, cfg: UserConfig, events: 
     lineup = buildLineup(next);
     scene.add(lineup.group);
     pickMap = new Map(lineup.pickables.map((p) => [p.object, p]));
+    beamRef = lineup.group.getObjectByName('beam200b') as THREE.Mesh | undefined;
   }
 
   function onKey(e: KeyboardEvent): void {
@@ -312,9 +329,26 @@ export function createScene(canvas: HTMLCanvasElement, cfg: UserConfig, events: 
   renderer.setAnimationLoop(() => {
     if (disposed) return;
     const dt = Math.min(clock.getDelta(), 0.1);
+    const t = clock.elapsedTime;
     tour.update(dt);
     controls.update(dt);
     updateHover();
+
+    if (!reducedMotion) {
+      // Slow tumble down from 2.8 m, then start over.
+      const cycle = 9;
+      const phase = (t % cycle) / cycle;
+      fallingNote.position.set(
+        LINEUP_X.coffee - 0.55 + Math.sin(t * 1.7) * 0.12,
+        2.8 * (1 - phase),
+        0.55 + Math.cos(t * 1.3) * 0.1
+      );
+      fallingNote.rotation.set(t * 0.9, t * 0.5, Math.sin(t * 1.1) * 0.6);
+      if (beamRef) {
+        (beamRef.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(t * 0.6) * 0.1;
+      }
+    }
+
     composer.render();
     labelRenderer.render(scene, camera);
   });

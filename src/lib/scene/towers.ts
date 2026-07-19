@@ -25,6 +25,7 @@ import {
   HOUSE_PRICE,
   HUMAN_HEIGHT,
   LINEUP_X,
+  MAGNITUDE_LADDER,
 } from './constants';
 import { EDGE_TEXTURE_METERS, makeBeamTexture, makeEdgeTexture, makeBillTopTexture } from './textures';
 import { makeTag } from './labels';
@@ -334,6 +335,7 @@ export function buildLineup(cfg: UserConfig): LineupHandles {
     })
   );
   beam.position.set(LINEUP_X.projection, 2000, 0);
+  beam.name = 'beam200b';
   group.add(beam);
   const beamBase = new THREE.Mesh(
     new THREE.CylinderGeometry(4, 4, 0.05, 32),
@@ -375,6 +377,33 @@ export function buildLineup(cfg: UserConfig): LineupHandles {
       const tag = makeTag([formatEUR(l.y * 1_000_000)], { variant: l.gold ? 'gold' : 'axis' });
       tag.position.set(x1 + 0.3, l.y, wallZ);
       group.add(tag);
+    }
+  }
+
+  // ——— Magnitude ladder: the sky as a labeled axis ———
+  {
+    const x0 = -1;
+    const x1 = LINEUP_X.billion + 1.8;
+    const z = -0.9;
+    for (const rung of MAGNITUDE_LADDER) {
+      const mat = new THREE.LineBasicMaterial({
+        color: 0x33404f,
+        transparent: true,
+        opacity: 0.45,
+      });
+      const geo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x0, rung.height, z),
+        new THREE.Vector3(x1, rung.height, z),
+      ]);
+      group.add(new THREE.Line(geo, mat));
+      const tag = makeTag([formatEUR(rung.height * 1_000_000), rung.note], { variant: 'axis' });
+      tag.position.set(x1 + 0.4, rung.height, z);
+      group.add(tag);
+      const tagLeft = makeTag([`${formatEUR(rung.height * 1_000_000)} · ${rung.note}`], {
+        variant: 'axis',
+      });
+      tagLeft.position.set(x0 - 0.4, rung.height, z);
+      group.add(tagLeft);
     }
   }
 
@@ -592,10 +621,9 @@ function buildStaircase(
     new THREE.MeshBasicMaterial({
       color: COLORS.accentYou,
       transparent: true,
-      opacity: 0.1,
+      opacity: 0.06,
       side: THREE.DoubleSide,
       depthWrite: false,
-      toneMapped: false,
     })
   );
   plane.rotation.x = -Math.PI / 2;

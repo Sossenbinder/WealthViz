@@ -16,6 +16,8 @@ export class SceneControls {
   private dom: HTMLElement;
   private onModeChange: (m: Mode) => void;
   private disposed = false;
+  private lastInput = performance.now();
+  private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(camera: THREE.PerspectiveCamera, dom: HTMLElement, onModeChange: (m: Mode) => void) {
     this.camera = camera;
@@ -34,13 +36,21 @@ export class SceneControls {
       if (this.mode === 'fly' && !this.disposed) this.onModeChange('fly');
     });
 
+    this.orbit.autoRotateSpeed = -0.35;
+
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
     dom.addEventListener('wheel', this.onWheel, { passive: false });
     dom.addEventListener('click', this.onClick);
+    dom.addEventListener('pointerdown', this.onPointerDown);
   }
 
+  private onPointerDown = () => {
+    this.lastInput = performance.now();
+  };
+
   private onKeyDown = (e: KeyboardEvent) => {
+    this.lastInput = performance.now();
     if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'SELECT')
       return;
     this.keys.add(e.code);
@@ -51,6 +61,7 @@ export class SceneControls {
   };
 
   private onWheel = (e: WheelEvent) => {
+    this.lastInput = performance.now();
     if (this.mode !== 'fly') return;
     e.preventDefault();
     this.flySpeed = THREE.MathUtils.clamp(this.flySpeed * Math.pow(1.15, -Math.sign(e.deltaY)), 1, 400);
@@ -80,6 +91,9 @@ export class SceneControls {
   update(dt: number): void {
     // Orbit can be live outside orbit mode too (e.g. parked at a tour stop).
     if (this.orbit.enabled) {
+      // Drift slowly after 5 s of idle in plain orbit mode — the scene stays alive.
+      this.orbit.autoRotate =
+        this.mode === 'orbit' && !this.reducedMotion && performance.now() - this.lastInput > 5000;
       this.orbit.update();
       return;
     }
@@ -120,6 +134,7 @@ export class SceneControls {
     window.removeEventListener('keyup', this.onKeyUp);
     this.dom.removeEventListener('wheel', this.onWheel);
     this.dom.removeEventListener('click', this.onClick);
+    this.dom.removeEventListener('pointerdown', this.onPointerDown);
     this.orbit.dispose();
     this.pointer.dispose();
   }
